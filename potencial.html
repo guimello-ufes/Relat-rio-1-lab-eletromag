@@ -163,13 +163,34 @@
             </div>
             <div class="flowchart-panel">
                 <h3>🗺️ O Mapa do Potencial</h3>
-                <div class="flow-step"><strong>1. O que é Potencial?</strong><p>Pense no potencial elétrico como uma "altitude" no espaço. Cargas positivas criam "montanhas" de potencial, enquanto cargas negativas criam "vales".</p></div>
-                <div class="flow-step"><strong>2. Linhas Equipotenciais</strong><p>As linhas coloridas são como as curvas de nível em um mapa topográfico. Todos os pontos em uma mesma linha têm a mesma "altitude" elétrica, ou seja, o mesmo potencial.</p></div>
-                <div class="flow-step"><strong>3. Linhas de Campo (com setas!)</strong><p>As linhas tracejadas com setas mostram a direção e sentido do campo elétrico, que é a direção da força em uma carga de prova positiva. Elas sempre apontam do potencial mais alto para o mais baixo e são perpendiculares às equipotenciais.</p></div>
-                <div class="flow-step"><strong>4. Trabalho Nulo</strong><p>Mover uma carga de teste ao longo de uma linha equipotencial é como andar em um terreno plano. Não custa energia! O trabalho realizado é zero, pois não há mudança na "altitude" (potencial).</p></div>
-                <div class="flow-step"><strong>5. Gradiente de Potencial</strong><p>Onde as linhas equipotenciais estão mais próximas, o "terreno" é mais íngreme, o que significa um campo elétrico mais forte. Onde estão mais afastadas, o campo é mais fraco.</p></div>
+                <div class="flow-step">
+                    <strong>1. Potencial Elétrico (V)</strong>
+                    <p>Potencial é uma grandeza escalar que representa a energia potencial por unidade de carga. Para uma carga puntiforme $Q$ a uma distância $r$, o potencial é :</p>
+                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V = k₀ * Q / r</code></p>
+                    <p>Cargas (+) criam potenciais positivos ("montanhas"), cargas (-) criam potenciais negativos ("vales") .</p>
+                </div>
+                <div class="flow-step">
+                    <strong>2. Superposição de Potenciais</strong>
+                    <p>Como o potencial é escalar, o potencial resultante ($V_{res}$) em um ponto devido a múltiplas cargas é a soma algébrica dos potenciais individuais ($V_1, V_2, ...$) :</p>
+                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V<small>res</small> = V₁ + V₂ + ...</code></p>
+                </div>
+                <div class="flow-step">
+                    <strong>3. Linhas Equipotenciais</strong>
+                    <p>São linhas (ou superfícies em 3D) onde o potencial elétrico ($V$) é constante . São análogas às curvas de nível em um mapa topográfico .</p>
+                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V = constante</code></p>
+                </div>
+                <div class="flow-step">
+                    <strong>4. Relação com Campo Elétrico ($\vec{E}$)</strong>
+                    <p>As linhas de campo elétrico ($\vec{E}$) são sempre perpendiculares às linhas equipotenciais e apontam na direção de maior decréscimo do potencial (do "alto" para o "baixo") .</p>
+                     <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→</code></p> <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E ⊥ Equipotencial</code></p>
+                </div>
+                <div class="flow-step">
+                    <strong>5. Trabalho e Equipotenciais</strong>
+                    <p>O trabalho ($W$) realizado pela força elétrica para mover uma carga $q$ entre dois pontos A e B de uma mesma linha equipotencial ($V_A = V_B$) é nulo :</p>
+                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W = -q * (V<small>B</small> - V<small>A</small>) = 0</code></p>
+                    <p>Mover-se ao longo de uma equipotencial não custa energia elétrica .</p>
+                </div>
             </div>
-        </div>
     </div>
 
     <script>
@@ -194,3 +215,4 @@
     </script>
 </body>
 </html>
+
