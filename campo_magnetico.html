@@ -132,13 +132,31 @@
             </div>
             <div class="flowchart-panel">
                  <h3>🧭 Física do Magnetismo</h3>
-                <div class="flow-step"><strong>1. Seção Transversal</strong><p>Estamos vendo os fios de cima (corte transversal). O símbolo <code>⊙</code> indica corrente saindo da tela (positiva) e <code>⊗</code> indica corrente entrando na tela (negativa).</p></div>
-                <div class="flow-step"><strong>2. Linhas de Campo</strong><p>O campo magnético forma círculos concêntricos ao redor de cada fio. A cor indica qual fio gerou aquela linha: vermelho para o Fio 1, azul para o Fio 2, verde para o Fio 3.</p></div>
-                <div class="flow-step"><strong>3. Regra da Mão Direita</strong><p>Aponte o polegar no sentido da corrente. Seus dedos se curvam mostrando o sentido do campo magnético ao redor do fio.</p></div>
-                <div class="flow-step"><strong>4. Campo Resultante</strong><p>Os vetores coloridos mostram o campo magnético total em cada ponto, resultado da soma vetorial dos campos de todos os fios. Veja como os campos interagem!</p></div>
-                <div class="flow-step"><strong>5. Forças Magnéticas</strong><p>Correntes paralelas (mesmo sentido) se atraem. Correntes antiparalelas (sentidos opostos) se repelem. A força é proporcional ao produto das correntes!</p></div>
+                <div class="flow-step">
+                    <strong>1. Seção Transversal e Fontes</strong>
+                    <p>Vemos os fios de cima . O campo magnético ($\vec{B}$) é gerado pela corrente elétrica ($I$) nos fios . Símbolo <code>⊙</code>: corrente saindo da tela (+I). Símbolo <code>⊗</code>: corrente entrando na tela (-I) .</p>
+                </div>
+                <div class="flow-step">
+                    <strong>2. Campo de um Fio Retilíneo (Lei de Ampère)</strong>
+                    <p>A intensidade do campo magnético ($B$) a uma distância $r$ de um fio longo com corrente $I$ é dada por :</p>
+                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B = (μ₀ * I) / (2 * π * r)</code></p>
+                    <p>Onde $\mu_0$ é a permeabilidade magnética do vácuo.</p>
+                </div>
+                <div class="flow-step">
+                    <strong>3. Direção (Regra da Mão Direita)</strong>
+                    <p>Aponte o polegar no sentido da corrente ($I$). Seus dedos se curvam no sentido das linhas de campo ($\vec{B}$), que são círculos concêntricos ao redor do fio .</p>
+                </div>
+                <div class="flow-step">
+                    <strong>4. Princípio da Superposição</strong>
+                    <p>O campo magnético resultante ($\vec{B}_{res}$) em qualquer ponto é a soma vetorial dos campos individuais ($\vec{B}_1, \vec{B}_2, ...$) criados por cada fio .</p>
+                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→</code></p> <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B<small>res</small> = B₁ + B₂ + ...</code></p>
+                    <p>Essa soma vetorial cria os padrões complexos visualizados.</p>
+                </div>
+                <div class="flow-step">
+                    <strong>5. Forças Magnéticas</strong>
+                    <p>Correntes paralelas (mesmo sentido) se atraem. Correntes antiparalelas (sentidos opostos) se repelem . A força por unidade de comprimento entre dois fios é proporcional a $I_1 \times I_2 / d$.</p>
+                </div>
             </div>
-        </div>
     </div>
 
     <script>
@@ -165,3 +183,4 @@
     </script>
 </body>
 </html>
+
