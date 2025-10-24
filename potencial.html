@@ -22,7 +22,7 @@
             align-items: start;
         }
 
-        /* Avatar Container (sem alterações) */
+        /* Avatar Container */
         #avatar-container {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             border-radius: 20px;
@@ -59,12 +59,12 @@
 
         /* Main Container */
         .container { width: 100%; }
-        h2 { text-align: center; color: white; margin-bottom: 15px; /* Reduzido */ font-size: 32px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        h2 { text-align: center; color: white; margin-bottom: 15px; font-size: 32px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
         
-        /* === Estilos para os links de navegação === */
+        /* Estilos para os links de navegação */
         .navigation-links {
             text-align: center;
-            margin-bottom: 25px; /* Aumentado */
+            margin-bottom: 25px;
         }
         .navigation-links a {
             color: #ffffff;
@@ -79,7 +79,6 @@
         .navigation-links a:hover {
             background-color: rgba(0, 0, 0, 0.4);
         }
-        /* === Fim dos estilos para links === */
 
         .main-content { display: flex; gap: 20px; flex-wrap: wrap; }
         .simulation-panel, .flowchart-panel { flex: 1; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
@@ -104,11 +103,28 @@
         .flow-step::after { content: '↓'; position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); font-size: 24px; color: #ccc; font-weight: bold; }
         .flow-step:last-child::after { content: ''; }
         .flow-step strong { color: #00416A; display: block; margin-bottom: 8px; font-size: 1.1em; }
-        .flow-step p { font-size: 14px; line-height: 1.6; color: #555; }
+        .flow-step p { font-size: 14px; line-height: 1.6; color: #555; margin-bottom: 5px; } /* Adicionado margin-bottom */
+        /* Estilo para equações em destaque */
+        .flow-step .math-display { margin: 10px 0; font-size: 1.1em; }
+
         @media (max-width: 1200px) { body { grid-template-columns: 1fr; } #avatar-container { position: static; max-width: 100%; margin-bottom: 20px; } }
         @media (max-width: 768px) { .simulation-panel, .flowchart-panel { min-width: 100%; } }
     </style>
-</head>
+
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    </head>
 <body>
     <div id="avatar-container">
         <svg id="avatar-icon" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" /><stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" /></linearGradient><radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#00FFFF;stop-opacity:1" /><stop offset="100%" style="stop-color:#0080FF;stop-opacity:1" /></radialGradient></defs><g class="avatar-body"><rect x="25" y="30" width="70" height="60" rx="12" fill="url(#bodyGradient)" stroke="#FF8C00" stroke-width="3"/><line x1="60" y1="30" x2="60" y2="15" stroke="#FF8C00" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="12" r="5" fill="#FF4500" class="control-light"/><circle cx="45" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/><circle cx="75" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/><circle cx="45" cy="50" r="6" fill="url(#eyeGlow)"/><circle cx="75" cy="50" r="6" fill="url(#eyeGlow)"/><circle cx="47" cy="48" r="2" fill="white"/><circle cx="77" cy="48" r="2" fill="white"/><rect x="45" y="68" width="30" height="6" rx="3" fill="#333" id="avatar-mouth"/><rect x="45" y="78" width="30" height="8" rx="2" fill="#333" opacity="0.3"/><circle cx="50" cy="82" r="2" fill="#00FF00" class="control-light"/><circle cx="60" cy="82" r="2" fill="#FFFF00" class="control-light"/><circle cx="70" cy="82" r="2" fill="#FF0000" class="control-light"/><path class="lightning" d="M 20 45 L 15 50 L 20 50 L 15 60 L 25 50 L 20 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/><path class="lightning" d="M 100 45 L 105 50 L 100 50 L 105 60 L 95 50 L 100 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/></g></svg>
@@ -127,6 +143,7 @@
             <a href="index.html">⚡ Campo Elétrico</a> |
             <a href="campo_magnetico.html">🧭 Campo Magnético</a>
         </div>
+
         <div class="main-content">
             <div class="simulation-panel">
                 <canvas id="canvas" width="800" height="800"></canvas>
@@ -161,40 +178,42 @@
                     <button id="pauseBtn" onclick="togglePause()">▶️ Iniciar Física</button>
                 </div>
             </div>
+
             <div class="flowchart-panel">
                 <h3>🗺️ O Mapa do Potencial</h3>
                 <div class="flow-step">
                     <strong>1. Potencial Elétrico (V)</strong>
-                    <p>Potencial é uma grandeza escalar que representa a energia potencial por unidade de carga. Para uma carga puntiforme $Q$ a uma distância $r$, o potencial é :</p>
-                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V = k₀ * Q / r</code></p>
-                    <p>Cargas (+) criam potenciais positivos ("montanhas"), cargas (-) criam potenciais negativos ("vales") .</p>
+                    <p>Potencial é uma grandeza escalar que representa a energia potencial por unidade de carga. Para uma carga puntiforme $Q$ a uma distância $r$, o potencial é:</p>
+                    <div class="math-display">$$ V = k_0 \frac{Q}{r} $$</div>
+                    <p>Cargas (+) criam potenciais positivos ("montanhas"), cargas (-) criam potenciais negativos ("vales").</p>
                 </div>
                 <div class="flow-step">
                     <strong>2. Superposição de Potenciais</strong>
-                    <p>Como o potencial é escalar, o potencial resultante ($V_{res}$) em um ponto devido a múltiplas cargas é a soma algébrica dos potenciais individuais ($V_1, V_2, ...$) :</p>
-                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V<small>res</small> = V₁ + V₂ + ...</code></p>
+                    <p>Como o potencial é escalar, o potencial resultante ($V_{\text{res}}$) em um ponto devido a múltiplas cargas é a soma algébrica dos potenciais individuais ($V_1, V_2, ...$):</p>
+                    <div class="math-display">$$ V_{\text{res}} = V_1 + V_2 + \dots $$</div>
                 </div>
                 <div class="flow-step">
                     <strong>3. Linhas Equipotenciais</strong>
-                    <p>São linhas (ou superfícies em 3D) onde o potencial elétrico ($V$) é constante . São análogas às curvas de nível em um mapa topográfico .</p>
-                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V = constante</code></p>
+                    <p>São linhas (ou superfícies em 3D) onde o potencial elétrico ($V$) é constante. São análogas às curvas de nível em um mapa topográfico.</p>
+                    <div class="math-display">$$ V = \text{constante} $$</div>
                 </div>
                 <div class="flow-step">
                     <strong>4. Relação com Campo Elétrico ($\vec{E}$)</strong>
-                    <p>As linhas de campo elétrico ($\vec{E}$) são sempre perpendiculares às linhas equipotenciais e apontam na direção de maior decréscimo do potencial (do "alto" para o "baixo") .</p>
-                     <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→</code></p> <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E ⊥ Equipotencial</code></p>
+                    <p>As linhas de campo elétrico ($\vec{E}$) são sempre perpendiculares às linhas equipotenciais e apontam na direção de maior decréscimo do potencial (do "alto" para o "baixo").</p>
+                    <div class="math-display">$$ \vec{E} \perp \text{Equipotencial} $$</div>
                 </div>
                 <div class="flow-step">
                     <strong>5. Trabalho e Equipotenciais</strong>
-                    <p>O trabalho ($W$) realizado pela força elétrica para mover uma carga $q$ entre dois pontos A e B de uma mesma linha equipotencial ($V_A = V_B$) é nulo :</p>
-                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;W = -q * (V<small>B</small> - V<small>A</small>) = 0</code></p>
-                    <p>Mover-se ao longo de uma equipotencial não custa energia elétrica .</p>
+                    <p>O trabalho ($W$) realizado pela força elétrica para mover uma carga $q$ entre dois pontos A e B de uma mesma linha equipotencial ($V_A = V_B$) é nulo:</p>
+                    <div class="math-display">$$ W = -q (V_B - V_A) = 0 $$</div>
+                    <p>Mover-se ao longo de uma equipotencial não custa energia elétrica.</p>
                 </div>
+            </div>
             </div>
     </div>
 
     <script>
-        // O JavaScript continua o mesmo da versão anterior, sem alterações.
+        // O JavaScript continua o mesmo da versão original, sem alterações.
         class Charge { constructor(q, x, y, vx = 0, vy = 0) { this.q = q; this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.mass = 1; } }
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d'); const k = 1.0, dt = 0.02, xLim = [-8, 8], yLim = [-8, 8];
         let charges = [ new Charge(3.0, -3, 0), new Charge(-3.0, 3, 0) ]; let simulationPaused = true;
@@ -210,9 +229,8 @@
         function togglePause() { simulationPaused = !simulationPaused; document.getElementById('pauseBtn').textContent = simulationPaused ? '▶️ Iniciar Física' : '⏸️ Pausar Física'; }
         let currentSpeech = null; function speak(text) { stopSpeaking(); if ('speechSynthesis' in window) { currentSpeech = new SpeechSynthesisUtterance(text.trim().replace(/\s+/g, ' ')); currentSpeech.lang = 'pt-BR'; currentSpeech.rate = 1; const avatarContainer = document.getElementById('avatar-container'); avatarContainer.classList.add('speaking'); currentSpeech.onend = () => avatarContainer.classList.remove('speaking'); window.speechSynthesis.speak(currentSpeech); } else { alert('Seu navegador não suporta a função de fala.'); } } function stopSpeaking() { window.speechSynthesis.cancel(); document.getElementById('avatar-container').classList.remove('speaking'); }
         function explainSimulation() { speak(`Olá! Bem-vindo ao mapa do potencial elétrico! As cargas positivas criam 'montanhas' de energia, representadas em vermelho. As negativas criam 'vales', em azul. As linhas coloridas são as linhas equipotenciais, conectando pontos de mesma 'altitude' elétrica. E agora, as linhas tracejadas com setas, são as linhas de campo elétrico! Elas mostram a direção da força em uma carga positiva de teste e são sempre perpendiculares às nossas linhas equipotenciais. Fascinante, não?`); }
-        function explainFlowchart() { speak(`O fluxograma explica nosso mapa. Primeiro: Potencial é como a altitude de um terreno. Cargas positivas criam montanhas, negativas criam vales. Segundo: As linhas equipotenciais são as curvas de nível, conectando pontos de mesma altitude. Terceiro: As linhas de campo elétrico com setas mostram a direção da força. Elas sempre apontam do potencial mais alto para o mais baixo e são perpendiculares às equipotenciais. Quarto: Andar sobre uma linha equipotencial não gasta energia, o trabalho é zero! E por último: Onde as linhas equipotenciais estão mais próximas, o campo elétrico é mais forte, como uma descida íngreme. Que tal experimentar?`); }
+        function explainFlowchart() { speak(`O fluxograma agora exibe as equações! Primeiro: A fórmula do potencial para uma carga pontual. Segundo: A superposição, mostrando que potenciais se somam algebricamente. Terceiro: A definição de linhas equipotenciais, onde V é constante. Quarto: A relação de perpendicularidade com o campo elétrico. E por último: A fórmula que mostra que o trabalho é zero ao longo de uma equipotencial. Muito mais completo!`); }
         draw();
     </script>
 </body>
 </html>
-
