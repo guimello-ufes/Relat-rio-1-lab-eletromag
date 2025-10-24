@@ -22,7 +22,7 @@
             align-items: start;
         }
 
-        /* Avatar Container (sem alterações) */
+        /* Avatar Container */
         #avatar-container {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             border-radius: 20px;
@@ -59,12 +59,12 @@
 
         /* Main Container */
         .container { width: 100%; }
-        h2 { text-align: center; color: white; margin-bottom: 15px; /* Reduzido */ font-size: 32px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        h2 { text-align: center; color: white; margin-bottom: 15px; font-size: 32px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
 
-        /* === Estilos para os links de navegação ADICIONADOS === */
+        /* Estilos para os links de navegação */
         .navigation-links {
             text-align: center;
-            margin-bottom: 25px; /* Aumentado */
+            margin-bottom: 25px;
         }
         .navigation-links a {
             color: #ffffff;
@@ -79,7 +79,6 @@
         .navigation-links a:hover {
             background-color: rgba(0, 0, 0, 0.4);
         }
-        /* === Fim dos estilos para links === */
 
         .main-content { display: flex; gap: 20px; flex-wrap: wrap; }
         .simulation-panel, .flowchart-panel { flex: 1; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
@@ -104,11 +103,28 @@
         .flow-step::after { content: '↓'; position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); font-size: 24px; color: #ccc; font-weight: bold; }
         .flow-step:last-child::after { content: ''; }
         .flow-step strong { color: #764ba2; display: block; margin-bottom: 8px; font-size: 1.1em; }
-        .flow-step p { font-size: 14px; line-height: 1.6; color: #555; }
+        .flow-step p { font-size: 14px; line-height: 1.6; color: #555; margin-bottom: 5px; } /* Adicionado margin-bottom */
+        /* Estilo para equações em destaque */
+        .flow-step .math-display { margin: 10px 0; font-size: 1.1em; }
+
         @media (max-width: 1200px) { body { grid-template-columns: 1fr; } #avatar-container { position: static; max-width: 100%; margin-bottom: 20px; } }
         @media (max-width: 768px) { .simulation-panel, .flowchart-panel { min-width: 100%; } }
     </style>
-</head>
+
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+    </head>
 <body>
     <div id="avatar-container">
         <svg id="avatar-icon" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" /><stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" /></linearGradient><radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#00FFFF;stop-opacity:1" /><stop offset="100%" style="stop-color:#0080FF;stop-opacity:1" /></radialGradient></defs><g class="avatar-body"><rect x="25" y="30" width="70" height="60" rx="12" fill="url(#bodyGradient)" stroke="#FF8C00" stroke-width="3"/><line x1="60" y1="30" x2="60" y2="15" stroke="#FF8C00" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="12" r="5" fill="#FF4500" class="control-light"/><circle cx="45" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/><circle cx="75" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/><circle cx="45" cy="50" r="6" fill="url(#eyeGlow)"/><circle cx="75" cy="50" r="6" fill="url(#eyeGlow)"/><circle cx="47" cy="48" r="2" fill="white"/><circle cx="77" cy="48" r="2" fill="white"/><rect x="45" y="68" width="30" height="6" rx="3" fill="#333" id="avatar-mouth"/><rect x="45" y="78" width="30" height="8" rx="2" fill="#333" opacity="0.3"/><circle cx="50" cy="82" r="2" fill="#00FF00" class="control-light"/><circle cx="60" cy="82" r="2" fill="#FFFF00" class="control-light"/><circle cx="70" cy="82" r="2" fill="#FF0000" class="control-light"/><path class="lightning" d="M 20 45 L 15 50 L 20 50 L 15 60 L 25 50 L 20 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/><path class="lightning" d="M 100 45 L 105 50 L 100 50 L 105 60 L 95 50 L 100 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/></g></svg>
@@ -127,6 +143,7 @@
             <a href="potencial.html">🗺️ Potencial Elétrico</a> |
             <a href="campo_magnetico.html">🧭 Campo Magnético</a>
         </div>
+
         <div class="main-content">
             <div class="simulation-panel">
                 <canvas id="canvas" width="800" height="800"></canvas>
@@ -161,22 +178,23 @@
                     <button id="pauseBtn" onclick="togglePause()">▶️ Iniciar Física</button>
                 </div>
             </div>
+
             <div class="flowchart-panel">
                 <h3>📊 Fluxograma da Física</h3>
                 <div class="flow-step">
                     <strong>1. Definição do Campo Elétrico</strong>
                     <p>O campo elétrico ($\vec{E}$) em um ponto é a força elétrica ($\vec{F}$) que atuaria sobre uma carga de prova positiva ($q_0$) dividida pelo valor dessa carga. Ele descreve a influência da(s) carga(s)-fonte no espaço.</p>
-                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;&nbsp;&nbsp;→</code></p> <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E = F / q₀</code></p>
+                    <div class="math-display">$$ \vec{E} = \frac{\vec{F}}{q_0} $$</div>
                 </div>
                 <div class="flow-step">
                     <strong>2. Campo de Carga Puntiforme (Lei de Coulomb)</strong>
                     <p>Uma carga puntiforme $Q$ cria um campo radial. Cargas (+) geram campo para fora (fonte), cargas (-) geram campo para dentro (sumidouro). A intensidade ($E$) diminui com o quadrado da distância ($r$).</p>
-                    <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E = k₀ * |Q| / r²</code></p>
+                    <div class="math-display">$$ E = k_0 \frac{|Q|}{r^2} $$</div>
                 </div>
                 <div class="flow-step">
                     <strong>3. Princípio da Superposição</strong>
-                    <p>Com múltiplas cargas, o campo elétrico resultante ($\vec{E}_{res}$) em qualquer ponto é a soma vetorial dos campos individuais ($\vec{E}_1, \vec{E}_2, ...$) criados por cada carga.</p>
-                     <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→</code></p> <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E<small>res</small> = E₁ + E₂ + ...</code></p>
+                    <p>Com múltiplas cargas, o campo elétrico resultante ($\vec{E}_{\text{res}}$) em qualquer ponto é a soma vetorial dos campos individuais ($\vec{E}_1, \vec{E}_2, ...$) criados por cada carga.</p>
+                    <div class="math-display">$$ \vec{E}_{\text{res}} = \vec{E}_1 + \vec{E}_2 + \dots $$</div>
                     <p>É essa soma que cria os padrões curvos das linhas de campo.</p>
                 </div>
                 <div class="flow-step">
@@ -187,6 +205,7 @@
                     <strong>5. Linhas de Campo e Carga</strong>
                     <p>O número de linhas que "saem" de uma carga positiva ou "entram" em uma carga negativa é proporcional ao módulo da carga $|Q|$.</p>
                 </div>
+            </div>
             </div>
     </div>
 
@@ -206,9 +225,8 @@
         function togglePause() { simulationPaused = !simulationPaused; document.getElementById('pauseBtn').textContent = simulationPaused ? '▶️ Iniciar Física' : '⏸️ Pausar Física'; }
         let currentSpeech = null; function speak(text) { stopSpeaking(); if ('speechSynthesis' in window) { currentSpeech = new SpeechSynthesisUtterance(text.trim().replace(/\s+/g, ' ')); currentSpeech.lang = 'pt-BR'; currentSpeech.rate = 1; const avatarContainer = document.getElementById('avatar-container'); avatarContainer.classList.add('speaking'); currentSpeech.onend = () => avatarContainer.classList.remove('speaking'); window.speechSynthesis.speak(currentSpeech); } else { alert('Seu navegador não suporta a função de fala.'); } } function stopSpeaking() { window.speechSynthesis.cancel(); document.getElementById('avatar-container').classList.remove('speaking'); }
         function explainSimulation() { speak(`Olá! Eu sou o Professor Volt! Nesta simulação, vamos ver a dança invisível dos campos elétricos. As linhas mostram a força e a direção do campo. Use os controles para mudar as cargas e veja a mágica da física acontecer! Para ver as cargas se moverem, clique em 'Iniciar Física'. Vamos explorar!`); }
-        function explainFlowchart() { speak(`O fluxograma explica a teoria de forma simples. Primeiro: Cargas positivas são fontes, de onde as linhas de campo nascem. Segundo: Cargas negativas são sumidouros, onde as linhas morrem. Terceiro: A superposição é a soma das influências de todas as cargas, o que cria as curvas. Quarto: A densidade das linhas mostra a força do campo, quanto mais juntas, mais forte. E por último: O número de linhas é proporcional ao valor da carga. Simples, né?`); }
+        function explainFlowchart() { speak(`O fluxograma agora mostra as equações! Primeiro: A definição do campo elétrico como força por carga. Segundo: A Lei de Coulomb para o campo de uma carga, diminuindo com o quadrado da distância. Terceiro: O princípio da superposição, mostrando que os campos se somam como vetores. Quarto: A densidade das linhas representa a intensidade do campo. E por último: O número de linhas é proporcional à carga. Agora com matemática!`); }
         draw();
     </script>
 </body>
 </html>
-
