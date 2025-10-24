@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Campo Elétrico Interativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        /* Enhanced Avatar Container */
+        #avatar-container {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5);
+            z-index: 1000;
+            width: 100%;
+            border: 3px solid #FF8C00;
+            position: sticky;
+            top: 20px;
+        }
+
+        #avatar-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+
+        .avatar-body { animation: float 3s ease-in-out infinite; }
+        .avatar-eye { animation: blink 4s linear infinite; }
+        #avatar-mouth { transform-origin: center; transition: transform 0.2s; }
+
+        #avatar-container.speaking #avatar-mouth { animation: talk 0.3s linear infinite; }
+        #avatar-container.speaking .lightning { animation: zap 0.3s ease-in-out infinite alternate; }
+        #avatar-container.speaking .control-light { animation: blink-light 0.5s linear infinite; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97.5% { transform: scaleY(0.1); } }
+        @keyframes talk { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+        @keyframes zap { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.15); } }
+        @keyframes blink-light { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        #avatar-title {
+            color: #333;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        #avatar-status {
+            color: #555;
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 15px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        .avatar-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #FF8C00;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        .avatar-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+        .avatar-btn:active { transform: translateY(0); }
+        .avatar-btn.stop { background: #ff4757; color: white; }
+        .avatar-btn.add-charge { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; }
+
+        /* Main Container */
+        .container { width: 100%; }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content { display: flex; gap: 20px; flex-wrap: wrap; }
+
+        .simulation-panel, .flowchart-panel {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .simulation-panel { min-width: 600px; }
+        .flowchart-panel { min-width: 400px; }
+
+        canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto 20px;
+            background: #f8f9fa;
+            width: 100%;
+            height: auto;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .control-group { background: #f8f9fa; padding: 15px; border-radius: 10px; }
+        .control-group.charge3 { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #2ecc71; }
+        .control-group h3 { margin-bottom: 10px; font-size: 16px; }
+        .control-group.charge1 h3 { color: #ff4757; }
+        .control-group.charge2 h3 { color: #3742fa; }
+        .control-group.charge3 h3 { color: #27ae60; }
+        
+        label { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 5px; color: #333; font-size: 14px; font-weight: 500; }
+        input[type="range"] { width: 100%; }
+        .value-display { font-weight: bold; }
+
+        #pauseBtn {
+            grid-column: 1 / -1;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #pauseBtn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+
+        .hidden { display: none; }
+        
+        /* === CORREÇÃO DO FLUXOGRAMA ABAIXO === */
+        .flowchart-panel h3 { color: #667eea; margin-bottom: 20px; font-size: 24px; text-align: center; }
+        .flow-step {
+            background: #f8f9fa;
+            border-left: 4px solid #764ba2;
+            padding: 15px 20px;
+            margin: 25px auto; /* Centraliza o card */
+            border-radius: 0 8px 8px 0;
+            position: relative;
+            max-width: 90%; /* Limita a largura para melhor leitura */
+            text-align: center; /* Centraliza todo o texto */
+        }
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ccc;
+            font-weight: bold;
+        }
+        .flow-step:last-child::after { content: ''; }
+        .flow-step strong { color: #764ba2; display: block; margin-bottom: 8px; font-size: 1.1em; }
+        .flow-step p { font-size: 14px; line-height: 1.6; color: #555; }
+
+        @media (max-width: 1200px) {
+            body { grid-template-columns: 1fr; }
+            #avatar-container { position: static; max-width: 100%; margin-bottom: 20px; }
+        }
+        @media (max-width: 768px) {
+            .simulation-panel, .flowchart-panel { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="avatar-container">
+        <svg id="avatar-icon" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                </linearGradient>
+                <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#00FFFF;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0080FF;stop-opacity:1" />
+                </radialGradient>
+            </defs>
+            <g class="avatar-body">
+                <rect x="25" y="30" width="70" height="60" rx="12" fill="url(#bodyGradient)" stroke="#FF8C00" stroke-width="3"/>
+                <line x1="60" y1="30" x2="60" y2="15" stroke="#FF8C00" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="60" cy="12" r="5" fill="#FF4500" class="control-light"/>
+                <circle cx="45" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/>
+                <circle cx="75" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/>
+                <circle cx="45" cy="50" r="6" fill="url(#eyeGlow)"/>
+                <circle cx="75" cy="50" r="6" fill="url(#eyeGlow)"/>
+                <circle cx="47" cy="48" r="2" fill="white"/>
+                <circle cx="77" cy="48" r="2" fill="white"/>
+                <rect x="45" y="68" width="30" height="6" rx="3" fill="#333" id="avatar-mouth"/>
+                <rect x="45" y="78" width="30" height="8" rx="2" fill="#333" opacity="0.3"/>
+                <circle cx="50" cy="82" r="2" fill="#00FF00" class="control-light"/>
+                <circle cx="60" cy="82" r="2" fill="#FFFF00" class="control-light"/>
+                <circle cx="70" cy="82" r="2" fill="#FF0000" class="control-light"/>
+                <path class="lightning" d="M 20 45 L 15 50 L 20 50 L 15 60 L 25 50 L 20 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/>
+                <path class="lightning" d="M 100 45 L 105 50 L 100 50 L 105 60 L 95 50 L 100 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/>
+            </g>
+        </svg>
+        <div id="avatar-title">⚡ Professor Volt ⚡</div>
+        <div id="avatar-status">Pronto para ensinar!</div>
+        <button class="avatar-btn" onclick="explainSimulation()">📚 Explicar Simulação</button>
+        <button class="avatar-btn" onclick="explainFlowchart()">📊 Explicar Fluxograma</button>
+        <button class="avatar-btn add-charge" id="addChargeBtn" onclick="toggleThirdCharge()">➕ Adicionar 3ª Carga</button>
+        <button class="avatar-btn stop" onclick="stopSpeaking()">⏹️ Parar</button>
+    </div>
+
+    <div class="container">
+        <h2>⚡ Simulador de Campo Elétrico</h2>
+        <div class="main-content">
+            <div class="simulation-panel">
+                <canvas id="canvas" width="800" height="800"></canvas>
+                <div class="controls">
+                    <div class="control-group charge1">
+                        <h3>⚡ Carga 1</h3>
+                        <label>Intensidade (μC): <span class="value-display" id="q1-value">2.0</span></label>
+                        <input type="range" id="q1" min="-5" max="5" step="0.1" value="2">
+                        <label>Posição X: <span class="value-display" id="x1-value">-3.0</span></label>
+                        <input type="range" id="x1" min="-8" max="8" step="0.1" value="-3">
+                        <label>Posição Y: <span class="value-display" id="y1-value">0.0</span></label>
+                        <input type="range" id="y1" min="-8" max="8" step="0.1" value="0">
+                    </div>
+                    <div class="control-group charge2">
+                        <h3>⚡ Carga 2</h3>
+                        <label>Intensidade (μC): <span class="value-display" id="q2-value">-2.0</span></label>
+                        <input type="range" id="q2" min="-5" max="5" step="0.1" value="-2">
+                        <label>Posição X: <span class="value-display" id="x2-value">3.0</span></label>
+                        <input type="range" id="x2" min="-8" max="8" step="0.1" value="3">
+                        <label>Posição Y: <span class="value-display" id="y2-value">0.0</span></label>
+                        <input type="range" id="y2" min="-8" max="8" step="0.1" value="0">
+                    </div>
+                    <div class="control-group charge3 hidden" id="charge3Controls">
+                        <h3>⚡ Carga 3</h3>
+                        <label>Intensidade (μC): <span class="value-display" id="q3-value">1.5</span></label>
+                        <input type="range" id="q3" min="-5" max="5" step="0.1" value="1.5">
+                        <label>Posição X: <span class="value-display" id="x3-value">0.0</span></label>
+                        <input type="range" id="x3" min="-8" max="8" step="0.1" value="0">
+                        <label>Posição Y: <span class="value-display" id="y3-value">4.0</span></label>
+                        <input type="range" id="y3" min="-8" max="8" step="0.1" value="4">
+                    </div>
+                    <button id="pauseBtn" onclick="togglePause()">▶️ Iniciar Física</button>
+                </div>
+            </div>
+            <div class="flowchart-panel">
+                <h3>📊 Fluxograma da Física</h3>
+                <div class="flow-step">
+                    <strong>1. Fontes de Campo</strong>
+                    <p>Cargas positivas (+) são como fontes de água: as linhas de campo "nascem" delas e se espalham, mostrando a direção que outra carga positiva seguiria se fosse colocada ali.</p>
+                </div>
+                <div class="flow-step">
+                    <strong>2. Sumidouros de Campo</strong>
+                    <p>Cargas negativas (-) funcionam como ralos: as linhas de campo são atraídas por elas e "desaparecem" em sua direção, representando seu destino final.</p>
+                </div>
+                <div class="flow-step">
+                    <strong>3. Princípio da Superposição</strong>
+                    <p>O caminho curvo das linhas não é mágica! Em qualquer ponto do espaço, o campo elétrico é a soma das influências de todas as cargas. É como se cada carga "puxasse" ou "empurrasse" as linhas, e o resultado é o belo padrão que vemos.</p>
+                </div>
+                <div class="flow-step">
+                    <strong>4. Intensidade e Densidade</strong>
+                    <p>A força do campo elétrico não é a mesma em todos os lugares. Onde as linhas de campo estão mais próximas umas das outras, o campo é mais intenso (mais forte). Onde elas estão mais espaçadas, o campo é mais fraco.</p>
+                </div>
+                <div class="flow-step">
+                    <strong>5. Proporcionalidade da Carga</strong>
+                    <p>A "quantidade" de linhas de campo que uma carga emite ou absorve é diretamente proporcional ao seu valor. Uma carga de +3μC, por exemplo, terá três vezes mais linhas saindo dela do que uma carga de +1μC.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // O JavaScript continua o mesmo da versão anterior, sem alterações.
+        class Charge {
+            constructor(q, x, y, vx = 0, vy = 0) {
+                this.q = q; this.x = x; this.y = y;
+                this.vx = vx; this.vy = vy; this.mass = 1;
+                this.color = q > 0 ? "#ff4757" : "#3742fa";
+            }
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const k = 1.0, dt = 0.02, xLim = [-8, 8], yLim = [-8, 8];
+        
+        let charges = [ new Charge(2.0, -3, 0), new Charge(-2.0, 3, 0) ];
+        let simulationPaused = true;
+        
+        const controls = {
+            q1: { el: document.getElementById('q1'), display: document.getElementById('q1-value'), charge: 0, prop: 'q' },
+            x1: { el: document.getElementById('x1'), display: document.getElementById('x1-value'), charge: 0, prop: 'x' },
+            y1: { el: document.getElementById('y1'), display: document.getElementById('y1-value'), charge: 0, prop: 'y' },
+            q2: { el: document.getElementById('q2'), display: document.getElementById('q2-value'), charge: 1, prop: 'q' },
+            x2: { el: document.getElementById('x2'), display: document.getElementById('x2-value'), charge: 1, prop: 'x' },
+            y2: { el: document.getElementById('y2'), display: document.getElementById('y2-value'), charge: 1, prop: 'y' },
+            q3: { el: document.getElementById('q3'), display: document.getElementById('q3-value'), charge: 2, prop: 'q' },
+            x3: { el: document.getElementById('x3'), display: document.getElementById('x3-value'), charge: 2, prop: 'x' },
+            y3: { el: document.getElementById('y3'), display: document.getElementById('y3-value'), charge: 2, prop: 'y' },
+        };
+
+        Object.values(controls).forEach(c => {
+            c.el.addEventListener('input', () => {
+                if (charges[c.charge]) {
+                    const value = parseFloat(c.el.value);
+                    charges[c.charge][c.prop] = value;
+                    c.display.textContent = value.toFixed(1);
+                    if (c.prop === 'x' || c.prop === 'y') {
+                        charges[c.charge].vx = 0;
+                        charges[c.charge].vy = 0;
+                    }
+                }
+            });
+        });
+
+        function toggleThirdCharge() {
+            const controlsDiv = document.getElementById('charge3Controls');
+            const btn = document.getElementById('addChargeBtn');
+            if (charges.length === 3) {
+                charges.pop();
+                controlsDiv.classList.add('hidden');
+                btn.textContent = '➕ Adicionar 3ª Carga';
+                speak('Terceira carga removida. Voltamos a explorar a interação entre duas cargas.');
+            } else {
+                const newCharge = new Charge(1.5, 0, 4);
+                charges.push(newCharge);
+                controlsDiv.classList.remove('hidden');
+                btn.textContent = '➖ Remover 3ª Carga';
+                speak('Uma terceira carga foi adicionada! Veja como o campo elétrico ficou mais complexo.');
+            }
+        }
+
+        function getFieldAt(x, y, chargeToIgnore = null) {
+            let ex = 0, ey = 0;
+            for (const c of charges) {
+                if (c === chargeToIgnore) continue;
+                const dx = x - c.x, dy = y - c.y;
+                const r2 = dx * dx + dy * dy;
+                if (r2 < 0.01) continue;
+                const r = Math.sqrt(r2);
+                const E = k * c.q / r2;
+                ex += E * dx / r;
+                ey += E * dy / r;
+            }
+            return [ex, ey];
+        }
+
+        function drawArrowhead(ctx, fromX, fromY, toX, toY, arrowSize = 5) {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI / 7), toY - arrowSize * Math.sin(angle - Math.PI / 7));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI / 7), toY - arrowSize * Math.sin(angle + Math.PI / 7));
+        }
+
+        function drawAllFieldLines() {
+            const scaleX = canvas.width / (xLim[1] - xLim[0]);
+            const scaleY = canvas.height / (yLim[1] - yLim[0]);
+            const originX = canvas.width / 2;
+            const originY = canvas.height / 2;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
+            const linesPerUnitCharge = 12, stepSize = 0.1, maxSteps = 600, startRadius = 0.3, stopRadius = 0.35;
+            const seedPoints = [];
+            for (const charge of charges) {
+                if (charge.q > 0) {
+                    const numLines = Math.round(charge.q * linesPerUnitCharge);
+                    for (let i = 0; i < numLines; i++) {
+                        const angleTry = (i / numLines) * 2 * Math.PI;
+                        const sx = charge.x + startRadius * Math.cos(angleTry), sy = charge.y + startRadius * Math.sin(angleTry);
+                        const [ex, ey] = getFieldAt(sx, sy, charge);
+                        const E_self_x = k * charge.q / (startRadius ** 2) * Math.cos(angleTry);
+                        const E_self_y = k * charge.q / (startRadius ** 2) * Math.sin(angleTry);
+                        const finalAngle = Math.atan2(ey + E_self_y, ex + E_self_x);
+                        seedPoints.push({ x: charge.x + startRadius * Math.cos(finalAngle), y: charge.y + startRadius * Math.sin(finalAngle) });
+                    }
+                }
+            }
+            for (const seed of seedPoints) {
+                let { x, y } = seed;
+                const pathPoints = [{x, y}];
+                ctx.beginPath();
+                ctx.moveTo(originX + x * scaleX, originY - y * scaleY);
+                for (let step = 0; step < maxSteps; step++) {
+                    const [ex, ey] = getFieldAt(x, y);
+                    const eMag = Math.sqrt(ex * ex + ey * ey);
+                    if (eMag < 1e-4) break;
+                    x += stepSize * ex / eMag;
+                    y += stepSize * ey / eMag;
+                    pathPoints.push({x, y});
+                    ctx.lineTo(originX + x * scaleX, originY - y * scaleY);
+                    let stopped = false;
+                    for (const other of charges) {
+                        if (other.q >= 0) continue;
+                        const dx = x - other.x, dy = y - other.y;
+                        if (dx * dx + dy * dy < stopRadius * stopRadius) {
+                            ctx.lineTo(originX + other.x * scaleX, originY - other.y * scaleY);
+                            stopped = true;
+                            break;
+                        }
+                    }
+                    if (stopped || x < xLim[0] || x > xLim[1] || y < yLim[0] || y > yLim[1]) break;
+                }
+                if (pathPoints.length > 20) {
+                    const mid = Math.floor(pathPoints.length / 2);
+                    const p1 = pathPoints[mid - 1], p2 = pathPoints[mid];
+                    drawArrowhead(ctx, originX + p1.x * scaleX, originY - p1.y * scaleY, originX + p2.x * scaleX, originY - p2.y * scaleY);
+                }
+                ctx.stroke();
+            }
+        }
+
+        function updatePhysics() {
+            if (simulationPaused) return;
+            const forces = charges.map(() => ({ fx: 0, fy: 0 }));
+            for (let i = 0; i < charges.length; i++) {
+                for (let j = i + 1; j < charges.length; j++) {
+                    const c1 = charges[i], c2 = charges[j];
+                    const dx = c2.x - c1.x, dy = c2.y - c1.y;
+                    const r2 = dx * dx + dy * dy;
+                    if (r2 < 0.1) continue;
+                    const r = Math.sqrt(r2);
+                    const forceMag = -k * c1.q * c2.q / r2;
+                    const fx = forceMag * dx / r, fy = forceMag * dy / r;
+                    forces[i].fx -= fx; forces[i].fy -= fy;
+                    forces[j].fx += fx; forces[j].fy += fy;
+                }
+            }
+            charges.forEach((c, i) => {
+                const ax = forces[i].fx / c.mass, ay = forces[i].fy / c.mass;
+                c.vx += ax * dt; c.vy += ay * dt;
+                c.x += c.vx * dt; c.y += c.vy * dt;
+                if (c.x < xLim[0] || c.x > xLim[1]) c.vx *= -0.8;
+                if (c.y < yLim[0] || c.y > yLim[1]) c.vy *= -0.8;
+                c.x = Math.max(xLim[0], Math.min(xLim[1], c.x));
+                c.y = Math.max(yLim[0], Math.min(yLim[1], c.y));
+                const controlId = i + 1;
+                if(controls['x' + controlId]) {
+                    controls['x' + controlId].el.value = c.x;
+                    controls['x' + controlId].display.textContent = c.x.toFixed(1);
+                    controls['y' + controlId].el.value = c.y;
+                    controls['y' + controlId].display.textContent = c.y.toFixed(1);
+                }
+            });
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#f8f9fa";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            updatePhysics();
+            drawAllFieldLines();
+            const scaleX = canvas.width / (xLim[1] - xLim[0]), scaleY = canvas.height / (yLim[1] - yLim[0]);
+            const originX = canvas.width / 2, originY = canvas.height / 2;
+            charges.forEach((c, i) => {
+                ctx.beginPath();
+                const canvasX = originX + c.x * scaleX, canvasY = originY - c.y * scaleY;
+                const radius = 18;
+                ctx.arc(canvasX, canvasY, radius, 0, 2 * Math.PI);
+                if (i === 0) c.color = c.q > 0 ? "#ff4757" : "#3742fa";
+                else if (i === 1) c.color = c.q > 0 ? "#ff9f43" : "#1e90ff";
+                else if (i === 2) c.color = c.q > 0 ? "#2ecc71" : "#16a085";
+                ctx.fillStyle = c.color;
+                ctx.fill();
+                ctx.strokeStyle = "rgba(0,0,0,0.5)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = "white";
+                ctx.font = "bold 20px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(c.q > 0 ? "+" : "−", canvasX, canvasY);
+            });
+            requestAnimationFrame(draw);
+        }
+
+        function togglePause() {
+            simulationPaused = !simulationPaused;
+            document.getElementById('pauseBtn').textContent = simulationPaused ? '▶️ Iniciar Física' : '⏸️ Pausar Física';
+        }
+
+        let currentSpeech = null;
+        function speak(text) {
+            stopSpeaking();
+            if ('speechSynthesis' in window) {
+                currentSpeech = new SpeechSynthesisUtterance(text.trim().replace(/\s+/g, ' '));
+                currentSpeech.lang = 'pt-BR';
+                currentSpeech.rate = 1;
+                const avatarContainer = document.getElementById('avatar-container');
+                avatarContainer.classList.add('speaking');
+                currentSpeech.onend = () => avatarContainer.classList.remove('speaking');
+                window.speechSynthesis.speak(currentSpeech);
+            } else { alert('Seu navegador não suporta a função de fala.'); }
+        }
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+            document.getElementById('avatar-container').classList.remove('speaking');
+        }
+        function explainSimulation() {
+            speak(`Olá! Eu sou o Professor Volt! Nesta simulação, vamos ver a dança invisível dos campos elétricos. As linhas mostram a força e a direção do campo. Use os controles para mudar as cargas e veja a mágica da física acontecer! Para ver as cargas se moverem, clique em 'Iniciar Física'. Vamos explorar!`);
+        }
+
+        function explainFlowchart() {
+            speak(`O fluxograma explica a teoria de forma simples. Primeiro: Cargas positivas são fontes, de onde as linhas de campo nascem. Segundo: Cargas negativas são sumidouros, onde as linhas morrem. Terceiro: A superposição é a soma das influências de todas as cargas, o que cria as curvas. Quarto: A densidade das linhas mostra a força do campo, quanto mais juntas, mais forte. E por último: O número de linhas é proporcional ao valor da carga. Simples, né?`);
+        }
+        
+        draw();
+    </script>
+</body>
+</html>

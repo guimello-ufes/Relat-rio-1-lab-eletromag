@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Campo Magnético - Seção Transversal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1F4037 0%, #99F2C8 100%); min-height: 100vh; padding: 20px; display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+        #avatar-container { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border-radius: 20px; padding: 20px; box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5); z-index: 1000; width: 100%; border: 3px solid #FF8C00; position: sticky; top: 20px; }
+        #avatar-icon { width: 120px; height: 120px; margin: 0 auto 15px; display: block; }
+        .avatar-body { animation: float 3s ease-in-out infinite; }
+        .avatar-eye { animation: blink 4s linear infinite; }
+        #avatar-mouth { transform-origin: center; transition: transform 0.2s; }
+        #avatar-container.speaking #avatar-mouth { animation: talk 0.3s linear infinite; }
+        #avatar-container.speaking .lightning { animation: zap 0.3s ease-in-out infinite alternate; }
+        #avatar-container.speaking .control-light { animation: blink-light 0.5s linear infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97.5% { transform: scaleY(0.1); } }
+        @keyframes talk { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+        @keyframes zap { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.15); } }
+        @keyframes blink-light { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        #avatar-title { color: #333; text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5); }
+        #avatar-status { color: #555; text-align: center; font-size: 13px; margin-bottom: 15px; min-height: 20px; font-weight: 500; }
+        .avatar-btn { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 10px; background: white; color: #FF8C00; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 14px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); }
+        .avatar-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+        .avatar-btn:active { transform: translateY(0); }
+        .avatar-btn.stop { background: #ff4757; color: white; }
+        .avatar-btn.add-charge { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; }
+        .container { width: 100%; }
+        h2 { text-align: center; color: white; margin-bottom: 30px; font-size: 32px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        .main-content { display: flex; gap: 20px; flex-wrap: wrap; }
+        .simulation-panel, .flowchart-panel { flex: 1; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+        .simulation-panel { min-width: 600px; }
+        .flowchart-panel { min-width: 400px; }
+        canvas { border: 2px solid #e0e0e0; border-radius: 10px; display: block; margin: 0 auto; background: #f8f9fa; width: 100%; height: auto; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .control-group { background: #f8f9fa; padding: 15px; border-radius: 10px; }
+        .control-group.charge3 { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #2ecc71; }
+        .control-group h3 { margin-bottom: 10px; font-size: 16px; }
+        .control-group.charge1 h3 { color: #ff4757; }
+        .control-group.charge2 h3 { color: #3742fa; }
+        .control-group.charge3 h3 { color: #27ae60; }
+        label { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 5px; color: #333; font-size: 14px; font-weight: 500; }
+        input[type="range"] { width: 100%; }
+        .value-display { font-weight: bold; }
+        .hidden { display: none; }
+        .flowchart-panel h3 { color: #1F4037; margin-bottom: 20px; font-size: 24px; text-align: center; }
+        .flow-step { background: #f8f9fa; border-left: 4px solid #99F2C8; padding: 15px 20px; margin: 25px auto; border-radius: 0 8px 8px 0; position: relative; max-width: 90%; text-align: center; }
+        .flow-step::after { content: '↓'; position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); font-size: 24px; color: #ccc; font-weight: bold; }
+        .flow-step:last-child::after { content: ''; }
+        .flow-step strong { color: #1F4037; display: block; margin-bottom: 8px; font-size: 1.1em; }
+        .flow-step p { font-size: 14px; line-height: 1.6; color: #555; }
+        .flow-step code { background-color: #e9ecef; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .force-indicator { background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 15px; margin-top: 20px; text-align: center; font-weight: bold; color: #856404; }
+        @media (max-width: 1200px) { body { grid-template-columns: 1fr; } #avatar-container { position: static; max-width: 100%; margin-bottom: 20px; } }
+        @media (max-width: 768px) { .simulation-panel, .flowchart-panel { min-width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="avatar-container">
+        <svg id="avatar-icon" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" /><stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" /></linearGradient><radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:#00FFFF;stop-opacity:1" /><stop offset="100%" style="stop-color:#0080FF;stop-opacity:1" /></radialGradient></defs><g class="avatar-body"><rect x="25" y="30" width="70" height="60" rx="12" fill="url(#bodyGradient)" stroke="#FF8C00" stroke-width="3"/><line x1="60" y1="30" x2="60" y2="15" stroke="#FF8C00" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="12" r="5" fill="#FF4500" class="control-light"/><circle cx="45" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/><circle cx="75" cy="50" r="10" fill="white" class="avatar-eye" stroke="#333" stroke-width="2"/><circle cx="45" cy="50" r="6" fill="url(#eyeGlow)"/><circle cx="75" cy="50" r="6" fill="url(#eyeGlow)"/><circle cx="47" cy="48" r="2" fill="white"/><circle cx="77" cy="48" r="2" fill="white"/><rect x="45" y="68" width="30" height="6" rx="3" fill="#333" id="avatar-mouth"/><rect x="45" y="78" width="30" height="8" rx="2" fill="#333" opacity="0.3"/><circle cx="50" cy="82" r="2" fill="#00FF00" class="control-light"/><circle cx="60" cy="82" r="2" fill="#FFFF00" class="control-light"/><circle cx="70" cy="82" r="2" fill="#FF0000" class="control-light"/><path class="lightning" d="M 20 45 L 15 50 L 20 50 L 15 60 L 25 50 L 20 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/><path class="lightning" d="M 100 45 L 105 50 L 100 50 L 105 60 L 95 50 L 100 50 Z" fill="#FFFF00" stroke="#FFA500" stroke-width="1.5"/></g></svg>
+        <div id="avatar-title">⚡ Professor Volt ⚡</div>
+        <div id="avatar-status">Pronto para ensinar!</div>
+        <button class="avatar-btn" onclick="explainSimulation()">📚 Explicar Simulação</button>
+        <button class="avatar-btn" onclick="explainFlowchart()">📊 Explicar Fluxograma</button>
+        <button class="avatar-btn add-charge" id="addWireBtn" onclick="toggleWires()">➕ Adicionar 2º Fio</button>
+        <button class="avatar-btn stop" onclick="stopSpeaking()">⏹️ Parar</button>
+    </div>
+
+    <div class="container">
+        <h2>🧭 Campo Magnético - Seção Transversal</h2>
+        <div class="main-content">
+            <div class="simulation-panel">
+                <canvas id="canvas" width="800" height="800"></canvas>
+                <div class="force-indicator" id="forceIndicator"> Força entre fios: <span id="forceValue">Calculando...</span> </div>
+                <div class="controls">
+                    <div class="control-group charge1">
+                        <h3>🧭 Fio 1</h3>
+                        <label>Corrente (A): <span class="value-display" id="i1-value">5.0</span></label>
+                        <input type="range" id="i1" min="-10" max="10" step="0.5" value="5">
+                        <label>Posição X: <span class="value-display" id="x1-value">0.0</span></label>
+                        <input type="range" id="x1" min="-8" max="8" step="0.1" value="0">
+                        <label>Posição Y: <span class="value-display" id="y1-value">0.0</span></label>
+                        <input type="range" id="y1" min="-8" max="8" step="0.1" value="0">
+                    </div>
+                    <div class="control-group charge2 hidden" id="wire2Controls">
+                        <h3>🧭 Fio 2</h3>
+                        <label>Corrente (A): <span class="value-display" id="i2-value">-5.0</span></label>
+                        <input type="range" id="i2" min="-10" max="10" step="0.5" value="-5">
+                        <label>Posição X: <span class="value-display" id="x2-value">3.0</span></label>
+                        <input type="range" id="x2" min="-8" max="8" step="0.1" value="3">
+                        <label>Posição Y: <span class="value-display" id="y2-value">0.0</span></label>
+                        <input type="range" id="y2" min="-8" max="8" step="0.1" value="0">
+                    </div>
+                    <div class="control-group charge3 hidden" id="wire3Controls">
+                        <h3>🧭 Fio 3</h3>
+                        <label>Corrente (A): <span class="value-display" id="i3-value">7.0</span></label>
+                        <input type="range" id="i3" min="-10" max="10" step="0.5" value="7">
+                        <label>Posição X: <span class="value-display" id="x3-value">0.0</span></label>
+                        <input type="range" id="x3" min="-8" max="8" step="0.1" value="0">
+                        <label>Posição Y: <span class="value-display" id="y3-value">-3.0</span></label>
+                        <input type="range" id="y3" min="-8" max="8" step="0.1" value="-3">
+                    </div>
+                </div>
+            </div>
+            <div class="flowchart-panel">
+                 <h3>🧭 Física do Magnetismo</h3>
+                <div class="flow-step"><strong>1. Seção Transversal</strong><p>Estamos vendo os fios de cima (corte transversal). O símbolo <code>⊙</code> indica corrente saindo da tela (positiva) e <code>⊗</code> indica corrente entrando na tela (negativa).</p></div>
+                <div class="flow-step"><strong>2. Linhas de Campo</strong><p>O campo magnético forma círculos concêntricos ao redor de cada fio. A cor indica qual fio gerou aquela linha: vermelho para o Fio 1, azul para o Fio 2, verde para o Fio 3.</p></div>
+                <div class="flow-step"><strong>3. Regra da Mão Direita</strong><p>Aponte o polegar no sentido da corrente. Seus dedos se curvam mostrando o sentido do campo magnético ao redor do fio.</p></div>
+                <div class="flow-step"><strong>4. Campo Resultante</strong><p>Os vetores coloridos mostram o campo magnético total em cada ponto, resultado da soma vetorial dos campos de todos os fios. Veja como os campos interagem!</p></div>
+                <div class="flow-step"><strong>5. Forças Magnéticas</strong><p>Correntes paralelas (mesmo sentido) se atraem. Correntes antiparalelas (sentidos opostos) se repelem. A força é proporcional ao produto das correntes!</p></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Wire {
+            constructor(current, x, y, color) {
+                this.i = current;
+                this.x = x;
+                this.y = y;
+                this.color = color;
+            }
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const xLim = [-10, 10], yLim = [-10, 10];
+        
+        // NOVO: Variável global para controlar a rotação do campo
+        let rotationAngle = 0;
+
+        let wires = [ new Wire(5.0, 0, 0, '#ff4757') ];
+
+        const controls = {
+            i1: { el: document.getElementById('i1'), display: document.getElementById('i1-value'), wire: 0, prop: 'i' },
+            x1: { el: document.getElementById('x1'), display: document.getElementById('x1-value'), wire: 0, prop: 'x' },
+            y1: { el: document.getElementById('y1'), display: document.getElementById('y1-value'), wire: 0, prop: 'y' },
+            i2: { el: document.getElementById('i2'), display: document.getElementById('i2-value'), wire: 1, prop: 'i' },
+            x2: { el: document.getElementById('x2'), display: document.getElementById('x2-value'), wire: 1, prop: 'x' },
+            y2: { el: document.getElementById('y2'), display: document.getElementById('y2-value'), wire: 1, prop: 'y' },
+            i3: { el: document.getElementById('i3'), display: document.getElementById('i3-value'), wire: 2, prop: 'i' },
+            x3: { el: document.getElementById('x3'), display: document.getElementById('x3-value'), wire: 2, prop: 'x' },
+            y3: { el: document.getElementById('y3'), display: document.getElementById('y3-value'), wire: 2, prop: 'y' },
+        };
+
+        Object.values(controls).forEach(c => {
+            c.el.addEventListener('input', () => {
+                if (wires[c.wire]) {
+                    const value = parseFloat(c.el.value);
+                    wires[c.wire][c.prop] = value;
+                    c.display.textContent = value.toFixed(1);
+                }
+            });
+        });
+        
+        function toggleWires() {
+            const wire2Controls = document.getElementById('wire2Controls');
+            const wire3Controls = document.getElementById('wire3Controls');
+            const btn = document.getElementById('addWireBtn');
+            
+            if (wires.length === 1) {
+                const newWire = new Wire(-5.0, 3, 0, '#3742fa');
+                wires.push(newWire);
+                wire2Controls.classList.remove('hidden');
+                btn.textContent = '➕ Adicionar 3º Fio';
+                speak('Segundo fio adicionado! Agora você vê o campo magnético resultante da interação entre os dois.');
+            } else if (wires.length === 2) {
+                const newWire = new Wire(7.0, -3, -3, '#2ecc71');
+                wires.push(newWire);
+                wire3Controls.classList.remove('hidden');
+                btn.textContent = '➖ Remover Fios Extras';
+                speak('Terceiro fio adicionado! A interação se torna ainda mais complexa.');
+            } else {
+                wires = [wires[0]]; // Mantém apenas o primeiro fio
+                wire2Controls.classList.add('hidden');
+                wire3Controls.classList.add('hidden');
+                btn.textContent = '➕ Adicionar 2º Fio';
+                speak('Fios extras removidos. Voltamos ao campo giratório de um único fio.');
+            }
+        }
+
+        function worldToCanvas(x, y) {
+            const scaleX = canvas.width / (xLim[1] - xLim[0]);
+            const scaleY = canvas.height / (yLim[1] - yLim[0]);
+            const originX = canvas.width / 2;
+            const originY = canvas.height / 2;
+            return { x: originX + x * scaleX, y: originY - y * scaleY };
+        }
+
+        function calculateMagneticField(wire, px, py) {
+            const dx = px - wire.x;
+            const dy = py - wire.y;
+            const r = Math.sqrt(dx * dx + dy * dy);
+            if (r < 0.1) return { Bx: 0, By: 0 };
+            const B_magnitude = Math.abs(wire.i) / (2 * Math.PI * r);
+            const direction = wire.i > 0 ? 1 : -1;
+            const Bx = -direction * B_magnitude * dy / r;
+            const By = direction * B_magnitude * dx / r;
+            return { Bx, By };
+        }
+
+        function calculateTotalField(px, py) {
+            let Bx_total = 0;
+            let By_total = 0;
+            wires.forEach(wire => {
+                if (wire.i !== 0) {
+                    const field = calculateMagneticField(wire, px, py);
+                    Bx_total += field.Bx;
+                    By_total += field.By;
+                }
+            });
+            return { Bx: Bx_total, By: By_total, magnitude: Math.sqrt(Bx_total * Bx_total + By_total * By_total) };
+        }
+        
+        function traceFieldLine(startX, startY, maxSteps = 500, stepSize = 0.05) {
+             const points = [];
+             let x = startX, y = startY;
+             for (let step = 0; step < maxSteps; step++) {
+                 let tooClose = false;
+                 wires.forEach(wire => { if (Math.sqrt((x - wire.x) ** 2 + (y - wire.y) ** 2) < 0.3) tooClose = true; });
+                 if (tooClose || x < xLim[0] || x > xLim[1] || y < yLim[0] || y > yLim[1]) break;
+                 points.push({ x, y });
+                 const field = calculateTotalField(x, y);
+                 if (field.magnitude < 0.01) break;
+                 x += field.Bx / field.magnitude * stepSize;
+                 y += field.By / field.magnitude * stepSize;
+             }
+             return points;
+        }
+
+        function drawIsolatedFieldLines() {
+            const wire = wires[0];
+            if (wire.i === 0) return;
+            const pos = worldToCanvas(wire.x, wire.y);
+            const numCircles = 10;
+            for (let i = 1; i <= numCircles; i++) {
+                const worldRadius = i * 0.8;
+                const canvasRadius = worldRadius * (canvas.width / (xLim[1] - xLim[0]));
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, canvasRadius, 0, 2 * Math.PI);
+                ctx.strokeStyle = wire.color;
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.5 - (i / numCircles) * 0.25;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                const numArrows = 6;
+                for (let j = 0; j < numArrows; j++) {
+                    // ALTERADO: Adicionado 'rotationAngle' para fazer as setas girarem
+                    const angle = (j / numArrows) * 2 * Math.PI + rotationAngle;
+                    const arrowX = pos.x + canvasRadius * Math.cos(angle);
+                    const arrowY = pos.y + canvasRadius * Math.sin(angle);
+                    const arrowAngle = angle + (wire.i > 0 ? Math.PI / 2 : -Math.PI / 2);
+                    const arrowSize = 10;
+                    ctx.save();
+                    ctx.translate(arrowX, arrowY);
+                    ctx.rotate(arrowAngle);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-arrowSize, -arrowSize / 2);
+                    ctx.lineTo(-arrowSize, arrowSize / 2);
+                    ctx.closePath();
+                    ctx.fillStyle = wire.color;
+                    ctx.globalAlpha = 0.7;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.restore();
+                }
+            }
+        }
+
+        function drawResultantFieldLines() {
+            const fieldLines = [];
+            wires.forEach((wire) => {
+                if (wire.i === 0) return;
+                
+                // ALTERADO: Reduzido o número de linhas para uma visualização mais limpa
+                const numLines = 6; 
+                const startRadius = 0.8;
+
+                for (let i = 0; i < numLines; i++) {
+                    const angle = (i / numLines) * 2 * Math.PI;
+                    const startX = wire.x + startRadius * Math.cos(angle);
+                    const startY = wire.y + startRadius * Math.sin(angle);
+                    
+                    // ALTERADO: Reduzido o número de passos para linhas mais curtas e menos complexas
+                    const points = traceFieldLine(startX, startY, 300, 0.08); 
+                    if (points.length > 10) { fieldLines.push({ points, color: wire.color }); }
+                }
+            });
+            fieldLines.forEach(line => {
+                ctx.beginPath();
+                ctx.strokeStyle = line.color;
+                
+                // ALTERADO: Linhas mais finas e com maior transparência
+                ctx.lineWidth = 2.0; 
+                ctx.globalAlpha = 0.5; 
+
+                line.points.forEach((point, index) => {
+                    const canvasPos = worldToCanvas(point.x, point.y);
+                    if (index === 0) { ctx.moveTo(canvasPos.x, canvasPos.y); } 
+                    else { ctx.lineTo(canvasPos.x, canvasPos.y); }
+                });
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                 // Lógica das setas (inalterada)
+                 const numArrows = 2;
+                 const arrowInterval = Math.floor(line.points.length / (numArrows + 1));
+                 for (let i = arrowInterval; i < line.points.length - arrowInterval; i += arrowInterval) {
+                     const p1 = line.points[i];
+                     const p2 = line.points[Math.min(i + 5, line.points.length - 1)];
+                     const cp1 = worldToCanvas(p1.x, p1.y);
+                     const cp2 = worldToCanvas(p2.x, p2.y);
+                     const angle = Math.atan2(cp2.y - cp1.y, cp2.x - cp1.x);
+                     const arrowSize = 10;
+                     ctx.save();
+                     ctx.translate(cp1.x, cp1.y);
+                     ctx.rotate(angle);
+                     ctx.beginPath();
+                     ctx.moveTo(0, 0);
+                     ctx.lineTo(-arrowSize, -arrowSize / 2);
+                     ctx.lineTo(-arrowSize, arrowSize / 2);
+                     ctx.closePath();
+                     ctx.fillStyle = line.color;
+                     ctx.globalAlpha = 0.8;
+                     ctx.fill();
+                     ctx.globalAlpha = 1;
+                     ctx.restore();
+                 }
+            });
+        }
+
+        function calculateForceBetweenWires(wire1, wire2) {
+            const dx = wire2.x - wire1.x;
+            const dy = wire2.y - wire1.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 0.1) return { force: 0, type: 'neutro' };
+            const force_per_length = (wire1.i * wire2.i) / (2 * Math.PI * distance);
+            const force = Math.abs(force_per_length);
+            const type = (wire1.i * wire2.i > 0) ? 'atração' : 'repulsão';
+            return { force, type, distance };
+        }
+
+        function updateForceIndicator() {
+            const forceValue = document.getElementById('forceValue');
+            if (wires.length === 1) {
+                // ALTERADO: Texto reflete o campo giratório
+                forceValue.innerHTML = '<strong>CAMPO ISOLADO</strong><br>Campo magnético giratório';
+                return;
+            }
+            if (wires.length < 2) return;
+            const force12 = calculateForceBetweenWires(wires[0], wires[1]);
+            let forceText = `<strong>CAMPO RESULTANTE</strong><br>Força Fio 1-2: ${force12.type.toUpperCase()} - ${force12.force.toFixed(2)} (μ₀/2π) N/m`;
+            if (wires.length === 3) {
+                const force13 = calculateForceBetweenWires(wires[0], wires[2]);
+                const force23 = calculateForceBetweenWires(wires[1], wires[2]);
+                forceText = `<strong>CAMPO RESULTANTE</strong><br>1-2: ${force12.type} | 1-3: ${force13.type} | 2-3: ${force23.type}`;
+            }
+            forceValue.innerHTML = forceText;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#f8f9fa";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            const gridSpacing = canvas.width / 20;
+            for (let i = 0; i <= 20; i++) {
+                ctx.beginPath(); ctx.moveTo(i * gridSpacing, 0); ctx.lineTo(i * gridSpacing, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i * gridSpacing); ctx.lineTo(canvas.width, i * gridSpacing); ctx.stroke();
+            }
+
+            // NOVO: Incrementa o ângulo de rotação a cada quadro do desenho
+            rotationAngle += 0.02;
+
+            // Lógica de desenho principal (agora sem o movimento do fio)
+            if (wires.length === 1) {
+                drawIsolatedFieldLines();
+            } else {
+                drawResultantFieldLines();
+            }
+            
+            // Desenho dos fios (inalterado)
+            wires.forEach((wire, index) => {
+                const pos = worldToCanvas(wire.x, wire.y);
+                const radius = 25;
+                ctx.beginPath(); ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI); ctx.fillStyle = '#333'; ctx.fill();
+                ctx.strokeStyle = wire.color; ctx.lineWidth = 4; ctx.stroke();
+                ctx.fillStyle = 'white'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                if (wire.i > 0) {
+                    ctx.beginPath(); ctx.arc(pos.x, pos.y, 6, 0, 2 * Math.PI); ctx.fill();
+                    ctx.strokeStyle = wire.color; ctx.lineWidth = 2; ctx.stroke();
+                } else if (wire.i < 0) {
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(pos.x - 8, pos.y - 8); ctx.lineTo(pos.x + 8, pos.y + 8);
+                    ctx.moveTo(pos.x + 8, pos.y - 8); ctx.lineTo(pos.x - 8, pos.y + 8); ctx.stroke();
+                }
+                ctx.fillStyle = wire.color; ctx.font = 'bold 14px Arial';
+                ctx.fillText(`Fio ${index + 1}`, pos.x, pos.y + radius + 15);
+            });
+            
+            updateForceIndicator();
+            requestAnimationFrame(draw);
+        }
+
+        // Funções de fala (inalteradas)
+        let currentSpeech = null;
+        function speak(text) { stopSpeaking(); if ('speechSynthesis' in window) { currentSpeech = new SpeechSynthesisUtterance(text.trim().replace(/\s+/g, ' ')); currentSpeech.lang = 'pt-BR'; currentSpeech.rate = 1.1; const avatarContainer = document.getElementById('avatar-container'); avatarContainer.classList.add('speaking'); currentSpeech.onend = () => avatarContainer.classList.remove('speaking'); window.speechSynthesis.speak(currentSpeech); } else { alert('Seu navegador não suporta a função de fala.'); } }
+        function stopSpeaking() { window.speechSynthesis.cancel(); document.getElementById('avatar-container').classList.remove('speaking'); }
+        function explainSimulation() { if (wires.length === 1) { speak(`Olá! Você está vendo o campo magnético giratório de um único fio condutor. As linhas circulares são estáticas, mas as setas se movem para indicar a direção e o fluxo do campo. Adicione um segundo fio para ver a interação!`); } else { speak(`Agora você está vendo o campo magnético resultante da interação entre os fios! As linhas não são mais círculos perfeitos, elas se deformam mostrando como os campos magnéticos se somam vetorialmente. A visualização foi ajustada para maior clareza.`); } }
+        function explainFlowchart() { speak(`O fluxograma explica a física por trás da simulação. Primeiro, vemos a seção transversal dos fios com símbolos indicando o sentido da corrente. Segundo, o campo magnético forma círculos ao redor de cada fio. Terceiro, pela regra da mão direita, o polegar aponta no sentido da corrente e os dedos mostram o sentido do campo. Quarto, os vetores coloridos mostram o campo resultante da soma vetorial. Quinto, correntes paralelas se atraem e antiparalelas se repelem!`); }
+        
+        draw();
+    </script>
+</body>
+</html>
